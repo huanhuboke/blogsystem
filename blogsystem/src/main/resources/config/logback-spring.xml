@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+<!--    <conversionRule conversionWord="serverIp" converterClass="com.lmes.contract.config.LogIpConfig" />-->
+    <property name="logback.logdir" value="@profileLogdir@" defaultValue="./logs" />
+    <property name="SystemCode" value="L115" />
+    <springProperty scope="context" name="applicationName" source="spring.application.name" defaultValue="lmes-app" />
+    <springProperty scope="context" name="serverPort" source="server.port" defaultValue="8088" />
+    <contextName>${applicationName}</contextName>
+
+    <!--输出到控制台 ConsoleAppender -->
+    <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n</pattern>
+            </pattern>
+        </layout>
+    </appender>
+
+    <appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--如果只是想要 Info 级别的日志，只是过滤 info 还是会输出 Error 日志，因为 Error 的级别高， 所以我们使用下面的策略，可以避免输出 Error 的日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ALL</level>
+        </filter>
+        <!--日志名称，如果没有File 属性，那么只会使用FileNamePattern的文件路径规则 如果同时有<File>和<FileNamePattern>，那么当天日志是<File>，明天会自动把今天的日志改名为今天的日期。即，<File> 的日志都是当天的。 -->
+        <File>${logback.logdir}/${applicationName}/logs/info.${applicationName}.log</File>
+        <!--滚动策略，按照大小和时间滚动 SizeAndTimeBasedRollingPolicy -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--文件路径,定义了日志的切分方式——把每一天的日志归档到一个文件中,以防止日志填满整个磁盘空间 -->
+            <FileNamePattern>${logback.logdir}/${applicationName}/logs/info.${applicationName}.log.%d{yyyy-MM-dd}.%i</FileNamePattern>
+            <maxFileSize>1GB</maxFileSize>
+        </rollingPolicy>
+        <!--日志输出编码格式化 -->
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d|%level|${serverPort}|%class|%method|${SystemCode}|%X{traceId}|${applicationName}|1|%msg  %replace(%ex{full}){"[\r\n]+", "###"} %nopex|$|$|%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="fileErrorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--如果只是想要 Error 级别的日志，那么需要过滤一下，默认是 info 级别的，ThresholdFilter -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>Error</level>
+        </filter>
+        <!--日志名称，如果没有File 属性，那么只会使用FileNamePattern的文件路径规则 如果同时有<File>和<FileNamePattern>，那么当天日志是<File>，明天会自动把今天的日志改名为今天的日期。即，<File> 的日志都是当天的。 -->
+        <File>${logback.logdir}/${applicationName}/logs/error.${applicationName}.log</File>
+        <!--滚动策略，按照大小和时间滚动 SizeAndTimeBasedRollingPolicy -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--文件路径,定义了日志的切分方式——把每一天的日志归档到一个文件中,以防止日志填满整个磁盘空间 -->
+            <FileNamePattern>${logback.logdir}/${applicationName}/logs/error.${applicationName}.log.%d{yyyy-MM-dd}.%i</FileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+        </rollingPolicy>
+        <!--日志输出编码格式化 -->
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d|%level|${serverPort}|%class|%method|${SystemCode}|%X{traceId}|${applicationName}|1|%msg|$|$|%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="fileWarnLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--如果只是想要 DEBUG 级别的日志，那么需要过滤一下，默认是 info 级别的，ThresholdFilter -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!--过滤 DEBUG -->
+            <level>WARN</level>
+            <!--匹配到就允许 -->
+            <onMatch>ACCEPT</onMatch>
+            <!--没有匹配到就禁止-->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!--日志名称，如果没有File 属性，那么只会使用FileNamePattern的文件路径规则 如果同时有<File>和<FileNamePattern>，那么当天日志是<File>，明天会自动把今天的日志改名为今天的日期。即，<File> 的日志都是当天的。 -->
+        <File>${logback.logdir}/${applicationName}/logs/warn.${applicationName}.log</File>
+        <!--滚动策略，按照大小和时间滚动 SizeAndTimeBasedRollingPolicy -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--文件路径,定义了日志的切分方式——把每一天的日志归档到一个文件中,以防止日志填满整个磁盘空间 -->
+            <FileNamePattern>${logback.logdir}/${applicationName}/logs/warn.${applicationName}.log.%d{yyyy-MM-dd}.%i</FileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+        </rollingPolicy>
+        <!--日志输出编码格式化 -->
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d|%level|${serverPort}|%class|%method|${SystemCode}|%X{traceId}|${applicationName}|1|%msg|$|$|%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--指定最基础的日志输出级别 -->
+    <root level="DEBUG">
+        <!--appender将会添加到这个loger -->
+        <appender-ref ref="fileInfoLog" />
+        <appender-ref ref="fileWarnLog" />
+        <appender-ref ref="fileErrorLog" />
+        <appender-ref ref="consoleLog" />
+    </root>
+    <logger name="com.geekcac.test.dao" level="DEBUG"/>
+</configuration>
